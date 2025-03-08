@@ -1,0 +1,6 @@
+recursive-include django_deepl *
+
+exclude setup.py
+exclude pyproject.toml
+exclude MANIFEST.in
+
