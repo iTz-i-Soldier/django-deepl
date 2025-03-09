@@ -28,11 +28,9 @@ jobs:
         run: |
           python setup.py sdist bdist_wheel
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4  
-        with:
-          name: dist
-          path: dist/
+      - name: Check distribution package
+        run: |
+          twine check dist/*  # Verifica che il pacchetto sia valido
 
   pypi_publish:
     name: Upload release to PyPI
@@ -46,28 +44,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-
-  github_release:
-    name: Create GitHub Release
-    needs: [setup_and_build]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4  
-        with:
-          name: dist
-          path: dist/
-
-      - name: Create GitHub Release
-        id: create_release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create ${{ github.sha }} dist/* --title "Release ${{ github.sha }}" --generate-notes
