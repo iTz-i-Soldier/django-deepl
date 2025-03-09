@@ -6,33 +6,10 @@ on:
 env:
   PACKAGE_NAME: "django-deepl"
   OWNER: "iTz-i-Soldier"
-  UPLOAD_TO_PYPI: "false"
+  UPLOAD_TO_PYPI: "false"  
 
 jobs:
-  details:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
-
-      - name: Get current version from setup.py
-        id: version
-        run: |
-          VERSION=$(python -c "import re; f=open('setup.py'); content=f.read(); f.close(); match = re.search(r\"version='([^']+)'\", content); print(match.group(1) if match else 'Not found')")
-          echo "Current version: $VERSION"
-          echo "version=$VERSION" >> "$GITHUB_ENV"
-
   setup_and_build:
-    needs: details
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -59,7 +36,7 @@ jobs:
 
   pypi_publish:
     name: Upload release to PyPI
-    needs: [setup_and_build, details]
+    needs: [setup_and_build]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -80,7 +57,7 @@ jobs:
 
   github_release:
     name: Create GitHub Release
-    needs: [setup_and_build, details]
+    needs: [setup_and_build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
