@@ -1,12 +1,17 @@
 from setuptools import setup, find_packages
 
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
 setup(
     name="django-deepl",
-    version="0.1.0",
+    version="0.0.1",
     description="Django app to translate .po files using DeepL translation service",
     author="iTz-i-Soldier",
     author_email="no",
     url="https://github.com/iTz-i-Soldier/django-deepl",  
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
