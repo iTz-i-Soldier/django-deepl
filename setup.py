@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="django-deepl",
-    version="0.1.1",
+    version="0.1.0",
     description="Django app to translate .po files using DeepL translation service",
     author="iTz-i-Soldier",
     author_email="no",

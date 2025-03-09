@@ -12,8 +12,6 @@ env:
 jobs:
   details:
     runs-on: ubuntu-latest
-    outputs:
-      new_version: ${{ steps.version.outputs.new_version }}
     steps:
       - uses: actions/checkout@v2
 
@@ -27,31 +25,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install setuptools wheel twine
 
-      - name: Get current version
+      - name: Get current version from setup.py
         id: version
         run: |
-          CURRENT_VERSION=$(python setup.py --version)
-          echo "Current version: $CURRENT_VERSION"
-
-          # Calcola la nuova versione incrementando il numero della patch
-          IFS='.' read -r -a parts <<< "$CURRENT_VERSION"
-          parts[2]=$((parts[2] + 1))
-          NEW_VERSION="${parts[0]}.${parts[1]}.${parts[2]}"
-          
-          echo "New version: $NEW_VERSION"
-          echo "new_version=$NEW_VERSION" >> "$GITHUB_ENV"
-
-      - name: Update setup.py version
-        run: |
-          sed -i "s/version='.*'/version='${{ env.new_version }}'/" setup.py
-
-      - name: Commit new version
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git commit -am "Bump version to ${{ env.new_version }}"
-          git tag ${{ env.new_version }}
-          git push origin main --tags
+          VERSION=$(python -c "from setuptools import setup; print(setup().get('version'))")
+          echo "Current version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_ENV"
 
   setup_and_build:
     needs: details
@@ -86,13 +65,25 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: dist
-          path: dist/
+      - name: Check if version has changed
+        id: check_version
+        run: |
+          VERSION_IN_REPO=$(python -c "from setuptools import setup; print(setup().get('version'))")
+          echo "Current version in setup.py: $VERSION_IN_REPO"
+
+          # Check if the version in setup.py is different from the version in the last tag
+          LAST_TAG=$(git describe --tags --abbrev=0)
+          echo "Last tag: $LAST_TAG"
+          
+          if [[ "$VERSION_IN_REPO" == "$LAST_TAG" ]]; then
+            echo "No version change detected. Skipping PyPI upload."
+            echo "upload_to_pypi=false" >> $GITHUB_ENV
+          else
+            echo "Version change detected. Proceeding with PyPI upload."
+            echo "upload_to_pypi=true" >> $GITHUB_ENV
 
       - name: Publish distribution to PyPI
+        if: env.upload_to_pypi == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
@@ -120,4 +111,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create ${{ env.new_version }} dist/* --title "Release ${{ env.new_version }}" --generate-notes
+          gh release create ${{ github.sha }} dist/* --title "Release ${{ github.sha }}" --generate-notes
