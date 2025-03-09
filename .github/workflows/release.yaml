@@ -6,7 +6,7 @@ on:
 env:
   PACKAGE_NAME: "django-deepl"
   OWNER: "iTz-i-Soldier"
-  UPLOAD_TO_PYPI: "false" 
+  UPLOAD_TO_PYPI: "true" 
 
 jobs:
   setup_and_build:
