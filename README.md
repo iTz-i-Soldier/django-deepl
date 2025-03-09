@@ -157,7 +157,3 @@ python manage.py translate
 - `--interactive`: Enables interactive mode, prompting for confirmation or reformulation before each translation.
 
 ---
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
