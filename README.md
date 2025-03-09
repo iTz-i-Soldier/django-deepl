@@ -33,7 +33,9 @@ You need to add your **DeepL API key** to your `settings.py` file:
 DEEPL_API_KEY = 'your_deepl_api_key_here'
 ```
 
-Obtain your API key by registering for a DeepL account at [DeepL API](https://www.deepl.com).
+Obtain your API key by signing up for a DeepL account at [DeepL](https://www.deepl.com/signup).
+
+***Once the API key is set, you can start using and testing the app immediately. If you'd like to customize other settings, you can find them here below.***
 
 ### 2. `TRANSLATION_IGNORE_PATTERNS`
 
