@@ -1,13 +1,12 @@
-name: release
-
 on:
   push:
     branches:
-      - main 
+      - main
 
 env:
   PACKAGE_NAME: "django-deepl"
   OWNER: "iTz-i-Soldier"
+  UPLOAD_TO_PYPI: "false"
 
 jobs:
   details:
@@ -28,7 +27,7 @@ jobs:
       - name: Get current version from setup.py
         id: version
         run: |
-          VERSION=$(python -c "from setuptools import setup; print(setup().get('version'))")
+          VERSION=$(python -c "import re; f=open('setup.py'); content=f.read(); f.close(); match = re.search(r\"version='([^']+)'\", content); print(match.group(1) if match else 'Not found')")
           echo "Current version: $VERSION"
           echo "version=$VERSION" >> "$GITHUB_ENV"
 
@@ -65,25 +64,16 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - name: Check if version has changed
-        id: check_version
+      - name: Check if upload is enabled
         run: |
-          VERSION_IN_REPO=$(python -c "from setuptools import setup; print(setup().get('version'))")
-          echo "Current version in setup.py: $VERSION_IN_REPO"
-
-          # Check if the version in setup.py is different from the version in the last tag
-          LAST_TAG=$(git describe --tags --abbrev=0)
-          echo "Last tag: $LAST_TAG"
-          
-          if [[ "$VERSION_IN_REPO" == "$LAST_TAG" ]]; then
-            echo "No version change detected. Skipping PyPI upload."
-            echo "upload_to_pypi=false" >> $GITHUB_ENV
+          if [[ "${{ env.UPLOAD_TO_PYPI }}" == "true" ]]; then
+            echo "Upload to PyPI is enabled. Proceeding with the upload."
           else
-            echo "Version change detected. Proceeding with PyPI upload."
-            echo "upload_to_pypi=true" >> $GITHUB_ENV
-
+            echo "Upload to PyPI is disabled. Skipping the upload."
+            exit 0  # Salta il passo se l'upload è disabilitato
+          
       - name: Publish distribution to PyPI
-        if: env.upload_to_pypi == 'true'
+        if: env.UPLOAD_TO_PYPI == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
