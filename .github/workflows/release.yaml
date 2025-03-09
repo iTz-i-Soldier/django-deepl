@@ -9,7 +9,7 @@ env:
   UPLOAD_TO_PYPI: "true" 
 
 jobs:
-  setup_and_build:
+  build_and_publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,13 +32,6 @@ jobs:
         run: |
           twine check dist/*  # Verifica che il pacchetto sia valido
 
-  pypi_publish:
-    name: Upload release to PyPI
-    needs: [setup_and_build]
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-    steps:
       - name: Publish distribution to PyPI
         if: env.UPLOAD_TO_PYPI == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
