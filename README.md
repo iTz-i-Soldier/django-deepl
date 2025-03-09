@@ -108,7 +108,8 @@ python manage.py check_translations_status
 ```
 
 #### Arguments:
-- No additional arguments are required.
+- `--app`: Specify which app(s) (optional). If not provided, all apps will be processed.
+- `--language`: Specify which language(s) (optional). If not provided, all languages will be processed.
 
 ### 2. `delete_backups`
 
@@ -117,7 +118,7 @@ python manage.py check_translations_status
 **Usage**:
 
 ```bash
-python manage.py delete_backups --keep_today
+python manage.py delete_backups
 ```
 
 #### Arguments:
