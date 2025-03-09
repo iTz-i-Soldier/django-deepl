@@ -6,7 +6,7 @@ on:
 env:
   PACKAGE_NAME: "django-deepl"
   OWNER: "iTz-i-Soldier"
-  UPLOAD_TO_PYPI: "false"  
+  UPLOAD_TO_PYPI: "false" 
 
 jobs:
   setup_and_build:
@@ -29,7 +29,7 @@ jobs:
           python setup.py sdist bdist_wheel
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2  
         with:
           name: dist
           path: dist/
@@ -68,7 +68,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v2  
         with:
           name: dist
           path: dist/
