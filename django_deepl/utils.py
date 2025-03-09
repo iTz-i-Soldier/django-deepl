@@ -26,6 +26,8 @@ PO_FILE_EXTENSION = getattr(settings, 'PO_FILE_EXTENSION', ".po")
 
 PO_FILE_NAME = getattr(settings, 'PO_FILE_NAME', "django")
 
+DEEPL_API_KEY = getattr(settings, 'DEEPL_API_KEY', None)
+
 def extract_timestamp_from_filename(file_name):
     backup_file_pattern = re.compile(f"^{re.escape(BACKUP_FILE_NAME)}_(\\d+){re.escape(PO_FILE_EXTENSION)}$")
     match = backup_file_pattern.fullmatch(file_name)

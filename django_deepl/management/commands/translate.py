@@ -8,7 +8,7 @@ import polib
 import shutil
 import re
 
-from django_deepl.utils import check_translation_status, get_apps_name, PO_FILE_EXTENSION, PO_FILE_NAME, generate_po_backup_filename, TRANSLATION_IGNORE_PATTERNS, IGNORE_TAGS, IGNORE_TAGS_TEXT, TAG_HANDLING
+from django_deepl.utils import check_translation_status, get_apps_name, PO_FILE_EXTENSION, PO_FILE_NAME, generate_po_backup_filename, TRANSLATION_IGNORE_PATTERNS, IGNORE_TAGS, IGNORE_TAGS_TEXT, TAG_HANDLING, DEEPL_API_KEY
 
 class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
@@ -383,7 +383,7 @@ class Command(BaseCommand):
         return re.sub(pattern, r'\1', text)
 
     def get_deepl_client(self):
-        deepl_api_key = getattr(settings, 'DEEPL_API_KEY', None).strip()
+        deepl_api_key = DEEPL_API_KEY
         if deepl_api_key is None or not deepl_api_key:
             self.stdout.write(self.style.ERROR("DEEPL_API_KEY is not defined in the settings."))
             exit(0)
