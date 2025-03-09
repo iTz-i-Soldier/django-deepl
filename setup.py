@@ -8,7 +8,7 @@ setup(
     version="0.0.1",
     description="Django app to translate .po files using DeepL translation service",
     author="iTz-i-Soldier",
-    author_email="no",
+    author_email="iTz-i-Soldier@users.noreply.github.com",
     url="https://github.com/iTz-i-Soldier/django-deepl",  
     long_description=long_description,
     long_description_content_type='text/markdown',
