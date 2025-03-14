@@ -7,6 +7,7 @@ import os
 import polib
 import shutil
 import re
+from datetime import datetime, timezone
 
 from django_deepl.utils import check_translation_status, get_apps_name, PO_FILE_EXTENSION, PO_FILE_NAME, generate_po_backup_filename, TRANSLATION_IGNORE_PATTERNS, IGNORE_TAGS, IGNORE_TAGS_TEXT, TAG_HANDLING, DEEPL_API_KEY
 
@@ -272,6 +273,14 @@ class Command(BaseCommand):
         total_entry = len(po)
         translated_count = 0
         for entry in po:
+            remove_fuzzy = False
+            remove_previous_msgid = False
+            if entry.fuzzy:
+                self.stdout.write(self.style.WARNING('\nThis text is marked as fuzzy.'))
+                remove_fuzzy = True
+                if entry.previous_msgid:
+                    self.stdout.write(self.style.WARNING('the new text will be used.'))
+                    remove_previous_msgid = True
             msgid = entry.msgid
             msgstr = entry.msgstr
             if not msgid:
@@ -364,13 +373,21 @@ class Command(BaseCommand):
 
                 if translated_text and translated_text is not None:
                     entry.msgstr = translated_text
+                    if remove_fuzzy:
+                        entry.fuzzy = False
+                    if remove_previous_msgid:
+                        entry.previous_msgid = None
                     translated_count += 1 
                     progress = int((translated_count / total_entry) * 100) if overwrite else po.percent_translated()
                     self.stdout.write(self.style.WARNING(
                         f"Translation progress: {progress}% complete."
                     ))
 
-        # po.save(file_path)
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M+0000")
+        po.metadata["PO-Revision-Date"] = now
+        po.metadata["Last-Translator"] = "django-deepl <no-reply@django-deepl.com>"
+        po.metadata["X-Translated-Using"] = "django-deepl"
+        po.save(file_path)
         exit(0)
 
     def add_ignore_tags(self, text):
