@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 import os
 import re
-from django_deepl.utils import get_apps_name, PO_FILE_EXTENSION, BACKUP_FILE_NAME, is_today_timestamp, is_valid_timestamp, extract_timestamp_from_filename
+from django_deepl.utils import get_apps_name, PO_FILE_EXTENSION, BACKUP_FILE_NAME, is_today_timestamp, is_valid_timestamp, extract_timestamp_from_filename, get_all_languages
 
 class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
@@ -36,7 +36,7 @@ class Command(BaseCommand):
         base_dir = settings.BASE_DIR
         app_to_check = self.apps_name
 
-        language_to_check = [lang[0] for lang in settings.LANGUAGES]
+        language_to_check = get_all_languages()
 
         self.stdout.write(self.style.SUCCESS("\nChecking backup files for Django apps...\n"))
 

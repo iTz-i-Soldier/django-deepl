@@ -9,7 +9,7 @@ import shutil
 import re
 from datetime import datetime, timezone
 
-from django_deepl.utils import check_translation_status, get_apps_name, PO_FILE_EXTENSION, PO_FILE_NAME, generate_po_backup_filename, TRANSLATION_IGNORE_PATTERNS, IGNORE_TAGS, IGNORE_TAGS_TEXT, TAG_HANDLING, DEEPL_API_KEY
+from django_deepl.utils import check_translation_status, get_apps_name, PO_FILE_EXTENSION, PO_FILE_NAME, generate_po_backup_filename, TRANSLATION_IGNORE_PATTERNS, IGNORE_TAGS, IGNORE_TAGS_TEXT, TAG_HANDLING, DEEPL_API_KEY, get_all_languages
 
 class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
@@ -39,8 +39,8 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             '--language',
-            choices=[lang[0] for lang in settings.LANGUAGES],
-            default=[lang[0] for lang in settings.LANGUAGES],
+            choices=get_all_languages(),
+            default=get_all_languages(),
             nargs='*',
             help="Specify which language(s) {PO_FILE_EXTENSION} file to translate (optional). If not provided, all languages will be processed."
         )
@@ -146,6 +146,7 @@ class Command(BaseCommand):
         translate_base_language = kwargs.get('translate_base_language')
         no_backup = kwargs.get('no_backup')
         preferred_variant = kwargs.get('preferred_variant')
+        interactive = kwargs.get('interactive')
 
         base_language = settings.LANGUAGE_CODE
         base_dir = settings.BASE_DIR
@@ -197,6 +198,31 @@ class Command(BaseCommand):
             target_lang = translate_to.upper()
             if target_lang not in available_target_languages_set:
                 self.stdout.write(self.style.ERROR(f'({translate_to}) is not an available target language.'))
+                if interactive:
+                    try:
+                        while True:
+                            self.stdout.write(self.style.WARNING(f"Please enter one of the following languages to translate the file:\n{' '.join(lang for lang in self.available_target_languages)}"))
+                            self.stdout.write(self.style.WARNING("s: skip, "))
+                            self.stdout.write(self.style.WARNING("q: deactivate interactive mode\n"))
+                            confirm = input(':').strip().lower()
+                            if confirm in self.available_target_languages:
+                                self.stdout.write(self.style.SUCCESS("\nTranslation accepted.\n"))
+                                break
+                            elif confirm == "s":
+                                translated_text = None
+                                self.stdout.write(self.style.WARNING("\nSkipping...\n"))
+                                break
+                            elif confirm == "q":
+                                self.stdout.write(self.style.WARNING("\nThe interactive mode will be disabled from the next translation.\n"))
+                                interactive = False
+                            else:
+                                self.stdout.write(self.style.ERROR(f"\nInvalid choice. Please enter 'q', 's' or \n one of this '{"".join(lang for lang in self.available_target_languages)}'.\n"))
+                    except KeyboardInterrupt:
+                        print('\n')
+                        exit(0)
+                else:
+                    self.stdout.write(self.style.ERROR("skipping..."))
+                    continue
 
                 if len(preferred_variant) > 0:
                     preferred_match = next((lang for lang in preferred_variant if lang in available_target_languages_set), None)
@@ -366,7 +392,7 @@ class Command(BaseCommand):
                                 self.stdout.write(self.style.WARNING("\nThe interactive mode will be disabled from the next translation.\n"))
                                 interactive = False
                             else:
-                                self.stdout.write(self.style.ERROR("\nInvalid choice. Please enter 'y', 'r', or 's'.\n"))
+                                self.stdout.write(self.style.ERROR("\nInvalid choice. Please enter 'y', 'r', 'q' or 's'.\n"))
                     except KeyboardInterrupt:
                         print('\n')
                         exit(0)
@@ -388,7 +414,6 @@ class Command(BaseCommand):
         po.metadata["Last-Translator"] = "django-deepl <no-reply@django-deepl.com>"
         po.metadata["X-Translated-Using"] = "django-deepl"
         po.save(file_path)
-        exit(0)
 
     def add_ignore_tags(self, text):
         for pattern in TRANSLATION_IGNORE_PATTERNS:

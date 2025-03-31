@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 import os
 import polib
 
-from django_deepl.utils import check_translation_status, get_apps_name
+from django_deepl.utils import check_translation_status, get_apps_name, get_all_languages
 
 class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
@@ -33,8 +33,8 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             '--language',
-            choices=[lang[0] for lang in settings.LANGUAGES],
-            default=[lang[0] for lang in settings.LANGUAGES],
+            choices=get_all_languages(),
+            default=get_all_languages(),
             nargs='*',
             help="Specify which language(s) to check (optional). If not provided, checks all languages."
         )

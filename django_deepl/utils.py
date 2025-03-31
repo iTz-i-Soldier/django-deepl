@@ -80,6 +80,26 @@ def get_apps_name():
                 app_list.append(directory)
     return app_list
 
+def get_all_languages():
+    languages = []
+    base_dir = settings.BASE_DIR
+    apps = get_apps_name()
+
+    for app in apps:
+        app_path = os.path.join(base_dir, app) if app != 'project_base_directory' else base_dir  
+        locale_path = os.path.join(app_path, "locale")
+
+        if os.path.exists(locale_path) and os.path.isdir(locale_path):
+                for lang in os.listdir(locale_path): 
+                    if os.path.isdir(os.path.join(locale_path, lang)) and lang not in languages:
+                        languages.append(lang)
+
+        for lang_code in settings.LANGUAGES:
+            if lang_code[0] not in languages:
+                languages.append(lang_code[0])
+
+    return languages
+
 
 def check_translation_status(self, *args, **kwargs):
     app_to_check = kwargs.get('app')
@@ -120,7 +140,7 @@ def check_translation_status(self, *args, **kwargs):
             if all_languages_present:
                 self.stdout.write(self.style.SUCCESS(" - All required languages are available ✅"))
             else:
-                self.stdout.write(self.style.WARNING(f" - Missing translations for: {', '.join(missing_languages)}"))
+                self.stdout.write(self.style.WARNING(f" - Folder not found for: {', '.join(missing_languages)}"))
 
             completion_rates = {}
             for lang in language_to_check:
@@ -143,6 +163,11 @@ def check_translation_status(self, *args, **kwargs):
                         completion_rates[lang] = round(completion_rate, 2)
                     except Exception as e:
                         self.stdout.write(self.style.ERROR(f"Error reading PO file for {lang} in app {app}: {e}"))
+            
+            obsolete_entries = [entry for entry in po_file if entry.obsolete]
+            obsolete_count = len(obsolete_entries)
+            if obsolete_count > 0:
+                self.stdout.write(self.style.WARNING(f" - There are {obsolete_count} obsolete translations."))
 
             if completion_rates:
                 self.stdout.write(" - Translation completion rates:")
