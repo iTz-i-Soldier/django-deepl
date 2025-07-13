@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="django-deepl",
-    version="0.0.3",
+    version="0.0.4",
     description="Django app to translate .po files using DeepL translation service",
     author="iTz-i-Soldier",
     author_email="iTz-i-Soldier@users.noreply.github.com",

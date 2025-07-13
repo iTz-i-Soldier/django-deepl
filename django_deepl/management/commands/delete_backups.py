@@ -22,17 +22,8 @@ class Command(BaseCommand):
         '--version'
     ]
 
-    def add_arguments(self, parser):
-        parser.add_argument(
-            '--keep_today',
-            action='store_true',
-            default=False,  
-            help="If enabled, keeps backups from today and deletes others."
-        )
-
     def handle(self, *args, **kwargs):
-        keep_today = kwargs.get('keep_today')
-        
+                
         base_dir = settings.BASE_DIR
         app_to_check = self.apps_name
 
@@ -64,10 +55,6 @@ class Command(BaseCommand):
                             file_path = os.path.join(po_file_path, file)
 
                             if not file_timestamp or not is_valid_timestamp(file_timestamp):
-                                continue
-
-                            if keep_today and is_today_timestamp(file_timestamp):
-                                self.stdout.write(self.style.WARNING(f"Skipping file, seems to be from today: {file_path}"))
                                 continue
 
                             try:

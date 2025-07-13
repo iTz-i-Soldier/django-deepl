@@ -143,6 +143,8 @@ def check_translation_status(self, *args, **kwargs):
                 self.stdout.write(self.style.WARNING(f" - Folder not found for: {', '.join(missing_languages)}"))
 
             completion_rates = {}
+            extra_info = {}
+
             for lang in language_to_check:
                 po_file_path = os.path.join(locale_path, lang, "LC_MESSAGES", f"{PO_FILE_NAME}{PO_FILE_EXTENSION}")
                 
@@ -157,22 +159,50 @@ def check_translation_status(self, *args, **kwargs):
 
                     try:
                         po_file = polib.pofile(po_file_path)
-                        total_entries = len(po_file)
+
+                        total_entries = len([entry for entry in po_file if entry.msgid.strip() != ""])
                         translated_entries = len([entry for entry in po_file if entry.translated()])
+
+                        fuzzy_active_count = len([entry for entry in po_file if entry.fuzzy and not entry.obsolete and entry.msgid])
+
+                        obsolete_entries = [entry for entry in po_file.obsolete_entries() if entry.msgid.strip() != ""]
+                        obsolete_count = len(obsolete_entries)
+
+                        fuzzy_obsolete_count = len([entry for entry in obsolete_entries if entry.fuzzy and entry.msgid])
+
+                        total_fuzzy_count = fuzzy_active_count + fuzzy_obsolete_count
+
                         completion_rate = (translated_entries / total_entries * 100) if total_entries > 0 else 0
                         completion_rates[lang] = round(completion_rate, 2)
+                        extra_info[lang] = {
+                            "fuzzy_obsolete_count":fuzzy_obsolete_count,
+                            "fuzzy_active_count":fuzzy_active_count,
+                            "obsolete_count":obsolete_count,
+                        }
+
                     except Exception as e:
                         self.stdout.write(self.style.ERROR(f"Error reading PO file for {lang} in app {app}: {e}"))
-            
-            obsolete_entries = [entry for entry in po_file if entry.obsolete]
-            obsolete_count = len(obsolete_entries)
-            if obsolete_count > 0:
-                self.stdout.write(self.style.WARNING(f" - There are {obsolete_count} obsolete translations."))
 
             if completion_rates:
                 self.stdout.write(" - Translation completion rates:")
                 for lang, percentage in completion_rates.items():
+                    extra = extra_info.get(lang, {})
+
+                    obsolete_count = extra.get("obsolete_count", 0)
+                    fuzzy_active_count = extra.get("fuzzy_active_count", 0)
+                    fuzzy_obsolete_count = extra.get("fuzzy_obsolete_count", 0)
+
                     self.stdout.write(f"   • {lang}: {int(percentage)}%")
+
+                    if obsolete_count > 0:
+                        self.stdout.write(self.style.WARNING(f"      • There are {obsolete_count} obsolete translations."))
+                        if fuzzy_obsolete_count > 0:
+                            self.stdout.write(self.style.WARNING(
+                                f"         • Of these, {fuzzy_obsolete_count} are fuzzy obsolete translations."
+                            ))
+
+                    if fuzzy_active_count > 0:
+                        self.stdout.write(self.style.WARNING(f"      • Fuzzy: {fuzzy_active_count}"))
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error checking app {app}: {e}"))

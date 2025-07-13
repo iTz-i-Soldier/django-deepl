@@ -113,7 +113,7 @@ python manage.py check_translations_status
 
 ### 2. `delete_backups`
 
-**Description**: Deletes backup files. By default, it removes all backups. If the `--keep_today` option is used, it will retain backups made today.
+**Description**: Deletes backup files. By default, it removes all backups.
 
 **Usage**:
 
