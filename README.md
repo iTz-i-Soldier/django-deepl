@@ -121,9 +121,6 @@ python manage.py check_translations_status
 python manage.py delete_backups
 ```
 
-#### Arguments:
-- `--keep_today`: Retains backups made today and deletes the rest.
-
 ### 3. `translate`
 
 **Description**: Automatically translates `msgid` strings in `.po` files into the target language, filling in the `msgstr` values.

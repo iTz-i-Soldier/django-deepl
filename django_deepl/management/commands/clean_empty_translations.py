@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 
 import os
 import polib
+from datetime import datetime, timezone
 
 from django_deepl.utils import PO_FILE_NAME, PO_FILE_EXTENSION, get_apps_name, get_all_languages
 
@@ -62,8 +63,14 @@ class Command(BaseCommand):
                                 for entry in entries_to_remove:
                                     print(entry)
                                     po.remove(entry)
+                                
+                                now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M+0000")
+                                po.metadata["PO-Revision-Date"] = now
+                                po.metadata["Last-Translator"] = "django-deepl <no-reply@django-deepl.com>"
+                                po.metadata["X-Translated-Using"] = "django-deepl"
                                 po.save(po_file_path)
                                 self.stdout.write(self.style.SUCCESS(f"Cleaned empty translation in {po_file_path}"))
+                                
                         except Exception as e:
                             self.stdout.write(self.style.ERROR(f"Error cleaning {po_file_path}: {e}"))
                     else:

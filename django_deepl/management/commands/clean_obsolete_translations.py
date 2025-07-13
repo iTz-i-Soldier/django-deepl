@@ -1,5 +1,6 @@
 import os
 import polib
+from datetime import datetime, timezone
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -73,6 +74,10 @@ class Command(BaseCommand):
                     for entry in obsolete_entries:
                         po_file.remove(entry)
 
+                    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M+0000")
+                    po_file.metadata["PO-Revision-Date"] = now
+                    po_file.metadata["Last-Translator"] = "django-deepl <no-reply@django-deepl.com>"
+                    po_file.metadata["X-Translated-Using"] = "django-deepl"
                     po_file.save()
                     self.stdout.write(self.style.SUCCESS(f"Deleted {count} obsolete translation(s) from {app} ({lang})"))
 
